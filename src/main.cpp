@@ -4,10 +4,9 @@
 #include <GLFW/glfw3.h>
  
 #include "linmath.h"
- 
-#include <stdlib.h>
-#include <stddef.h>
-#include <stdio.h>
+#include "stl_headers.hpp"
+
+#include "logging.hpp"
  
 typedef struct Vertex
 {
@@ -119,6 +118,8 @@ int main(void)
         glfwGetFramebufferSize(window, &width, &height);
         const float ratio = width / (float) height;
  
+        LOG_DEBUG("Ratio: {}", ratio);
+
         glViewport(0, 0, width, height);
         glClear(GL_COLOR_BUFFER_BIT);
  
