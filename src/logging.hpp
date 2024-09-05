@@ -1,3 +1,4 @@
+#pragma once
 #include <iostream>
 #include "stl_headers.hpp"
 
@@ -11,7 +12,7 @@ namespace LOGGING
     #elif _WIN32
     #include <windows.h> 
 
-    void setColor(int textColor) { 
+    inline void setColor(int textColor) { 
         HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE); 
         SetConsoleTextAttribute(hConsole, textColor); 
     }
@@ -56,14 +57,15 @@ namespace LOGGING
     std::cout << "Hello, Other!" << '\n';
     #endif
 
-    std::string _to_string(const char* x){return std::string(x);}
-    std::string _to_string(std::string& x){return x;}
+    inline std::string _to_string(const char* x){return std::string(x);}
+    inline std::string _to_string(const unsigned char* x){return std::string((const char*)x);}
+    inline std::string _to_string(std::string& x){return x;}
 
     template<typename T>
-    std::string _to_string(T x){return std::to_string(x);}
+    inline std::string _to_string(T x){return std::to_string(x);}
 
 
-    void printTimeStamp()
+    inline void printTimeStamp()
     {
         time_t timestamp = time(NULL);
         struct tm datetime = *localtime(&timestamp);
@@ -73,7 +75,7 @@ namespace LOGGING
     }
 
     template <typename... Types>
-    void LOG(const char* fmt, Types&& ... args)
+    inline void LOG(const char* fmt, Types&& ... args)
     {
         size_t N = sizeof...(Types);
         std::vector<std::string> values;
