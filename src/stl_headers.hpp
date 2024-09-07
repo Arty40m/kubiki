@@ -8,3 +8,5 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdexcept>
+
+#include <functional>

@@ -79,17 +79,12 @@ void Window::_Init(int width, int height)
 
 }
 
-void Window::_Shutdown()
-{
-    glfwDestroyWindow(window);
-    glfwTerminate();
-}
-
 Window::Window(){}
 
 Window::~Window()
 {
-    _Shutdown();
+    glfwDestroyWindow(window);
+    glfwTerminate();
 }
 
 void Window::_PullEvents()

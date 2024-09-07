@@ -13,11 +13,13 @@ public:
     inline static int width = 640;
     inline static int height = 480;
 
+    Window(const Window&) = delete;
+    Window& operator=(const Window&) = delete;
+    
     static Window& GetInstance();
     
     // Class methods
     inline static void Init(int width, int height) {Window::GetInstance()._Init(width, height);}
-    inline static void Shutdown() {Window::GetInstance()._Shutdown();}
     inline static void PullEvents() {Window::GetInstance()._PullEvents();}
     inline static void SwapBuffers() {Window::GetInstance()._SwapBuffers();}
     inline static bool isShouldClose() {return Window::GetInstance()._isShouldClose();}
@@ -27,7 +29,6 @@ public:
 
     // Instance methods
     void _Init(int width, int height);
-    void _Shutdown();
     void _PullEvents();
     inline void _SwapBuffers() const {glfwSwapBuffers(window);}
     inline bool _isShouldClose() const {return glfwWindowShouldClose(window);}
@@ -40,7 +41,4 @@ private:
 
     Window();
     ~Window();
-
-    Window(const Window&) = delete;
-    Window& operator=(const Window&) = delete;
 };
