@@ -6,6 +6,8 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
+#include "KeyCodes.hpp"
+
 
 class Window
 {
@@ -16,28 +18,44 @@ public:
     Window(const Window&) = delete;
     Window& operator=(const Window&) = delete;
     
-    static Window& GetInstance();
+    static Window& GetI();
     
-    // Class methods
-    inline static void Init(int width, int height) {Window::GetInstance()._Init(width, height);}
-    inline static void PullEvents() {Window::GetInstance()._PullEvents();}
-    inline static void SwapBuffers() {Window::GetInstance()._SwapBuffers();}
-    inline static bool isShouldClose() {return Window::GetInstance()._isShouldClose();}
-    inline static void close() {Window::GetInstance()._close();}
-    inline static void clear() {Window::GetInstance()._clear();}
-    inline static float getAspectRatio() {return Window::GetInstance()._getAspectRatio();}
-
     // Instance methods
-    void _Init(int width, int height);
-    void _PullEvents();
-    inline void _SwapBuffers() const {glfwSwapBuffers(window);}
-    inline bool _isShouldClose() const {return glfwWindowShouldClose(window);}
-    inline void _close() const {glfwSetWindowShouldClose(window, true);}
-    void _clear();
-    inline float _getAspectRatio() const {return (float)Window::width / (float)Window::height;}
+    void Init(int width, int height);
+    void PullEvents();
+    inline void SwapBuffers() const {glfwSwapBuffers(window);}
+    inline bool isShouldClose() const {return glfwWindowShouldClose(window);}
+    inline void close() const {glfwSetWindowShouldClose(window, true);}
+    void clear();
+    inline float getAspectRatio() const {return (float)Window::width / (float)Window::height;}
+
+    inline double getTime() const {return glfwGetTime();}
+    const std::string& getKeyName(int keycode) const;
+    inline bool isKeyPressed(int keycode) const {return keyPressedArray[keycode];}
+
+    inline float getCurKeyPressTime(int keycode) const {return curKeyPressTimeArray[keycode];}
+    inline float getCurKeyReleaseTime(int keycode) const {return curKeyReleaseTimeArray[keycode];}
+    inline float getPrevKeyPressTime(int keycode) const {return prevKeyPressTimeArray[keycode];}
+    inline float getPrevKeyReleaseTime(int keycode) const {return prevKeyReleaseTimeArray[keycode];}
+
+    inline std::pair<float, float> getPrevMousePos() const {return {prevMouseX, prevMouseY};}
+    inline std::pair<float, float> getCurMousePos() const {return {curMouseX, curMouseY};}
 
 private:
     GLFWwindow* window;
+    std::vector<std::string> keyNameMap = createKeyNameMap();
+    bool keyStateWasChanged[NUMBER_KEYS];
+    bool keyPressedArray[NUMBER_KEYS];
+
+    float curKeyPressTimeArray[NUMBER_KEYS];
+    float curKeyReleaseTimeArray[NUMBER_KEYS];
+    float prevKeyPressTimeArray[NUMBER_KEYS];
+    float prevKeyReleaseTimeArray[NUMBER_KEYS];
+
+    float prevMouseX;
+    float prevMouseY;
+    float curMouseX;
+    float curMouseY;
 
     Window();
     ~Window();

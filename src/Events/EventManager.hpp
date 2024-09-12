@@ -12,32 +12,24 @@ public:
     EventManager(const EventManager&) = delete;
     EventManager& operator=(const EventManager&) = delete;
     
-    static EventManager& GetInstance();
-    
-    // Class methods
-    inline static void Init(int initEventBufferSize = 128) {EventManager::GetInstance()._Init(initEventBufferSize);}
-    inline static void addEvent(Event* e) {EventManager::GetInstance()._addEvent(e);}
-    inline static void addEventThisFrame(Event* e) {EventManager::GetInstance()._addEventThisFrame(e);}
-    inline static int numEvents() {EventManager::GetInstance()._numEvents();}
-    inline static void processEvents() {EventManager::GetInstance()._processEvents();}
-    inline static void addCallback(Event::EventType type, EventCallback callback) {
-        EventManager::GetInstance()._addCallback(type, callback);
-    }
-
-    template<typename E, typename... Types>
-    static E* createEvent(Types&& ... args);
+    static EventManager& GetI();
 
     // Instance methods
-    void _Init(int initEventBufferSize = 128);
-    void _addEvent(Event* e);
-    void _addEventThisFrame(Event* e);
-    int _numEvents() const;
-    void _processEvents();
-    void _addCallback(Event::EventType type, EventCallback callback);
+    void Init(int initEventBufferSize = 128);
+    void addEvent(Event* e);
+    void addEventThisFrame(Event* e);
+    int numEvents() const;
+    void processEvents();
+    void addCallback(Event::EventType type, EventCallback callback);
 
     template<typename E, typename... Types>
-    static E* _createEvent(Types&& ... args);
+    E* createEvent(Types&& ... args);
 
+    template<typename E, typename... Types>
+    void emplaceEvent(Types&& ... args);
+
+    template<typename E, typename... Types>
+    void emplaceEventThisFrame(Types&& ... args);
 
 private:
     std::vector<Event*> eBuffer1;
@@ -52,14 +44,22 @@ private:
 };
 
 
+// Create event
 template<typename E, typename... Types>
 E* EventManager::createEvent(Types&& ... args)
 {
-    return EventManager::GetInstance()._createEvent<E>(std::forward<Types>(args)...);
+    return new E(args...);
+}
+
+// Emplace event instance methods
+template<typename E, typename... Types>
+void EventManager::emplaceEvent(Types&& ... args){
+    Event* e = (Event*)createEvent<E>(std::forward<Types>(args)...);
+    return EventManager::addEvent(e);
 }
 
 template<typename E, typename... Types>
-E* EventManager::_createEvent(Types&& ... args)
-{
-    return new E(args...);
+void EventManager::emplaceEventThisFrame(Types&& ... args){
+    Event* e = (Event*)createEvent<E>(std::forward<Types>(args)...);
+    return EventManager::addEventThisFrame(e);
 }

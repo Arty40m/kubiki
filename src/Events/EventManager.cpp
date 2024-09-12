@@ -1,5 +1,6 @@
 #include "../stl_headers.hpp"
 #include "../logging.hpp"
+#include "Event.hpp"
 #include "EventManager.hpp"
 
 
@@ -10,19 +11,20 @@ EventManager::EventManager():
 
 EventManager::~EventManager() {}
 
-EventManager& EventManager::GetInstance()
+EventManager& EventManager::GetI()
 {
     static EventManager instance;
     return instance;
 }
 
-void EventManager::_Init(int initEventBufferSize)
+void EventManager::Init(int initEventBufferSize)
 {
     eBuffer1.reserve(initEventBufferSize);
     eBuffer2.reserve(initEventBufferSize);
+    Callbacks.resize((int)Event::EventType::COUNT);
 }
 
-void EventManager::_addEvent(Event* e)
+void EventManager::addEvent(Event* e)
 {
     if (firstBufferIsCurrent){
         eBuffer1.push_back(e);
@@ -31,7 +33,7 @@ void EventManager::_addEvent(Event* e)
     }
 }
 
-void EventManager::_addEventThisFrame(Event* e)
+void EventManager::addEventThisFrame(Event* e)
 {
     if (isProcessing)
     {
@@ -41,11 +43,11 @@ void EventManager::_addEventThisFrame(Event* e)
             eBuffer1.push_back(e);
         }
     } else {
-        _addEvent(e);
+        addEvent(e);
     }
 }
 
-int EventManager::_numEvents() const
+int EventManager::numEvents() const
 {
     if (firstBufferIsCurrent){
         return eBuffer1.size();
@@ -54,7 +56,7 @@ int EventManager::_numEvents() const
     }
 }
 
-void EventManager::_processEvents()
+void EventManager::processEvents()
 {
     std::vector<Event*>& eBuffer = (firstBufferIsCurrent) ? eBuffer1 : eBuffer2;
     firstBufferIsCurrent = !firstBufferIsCurrent;
@@ -67,21 +69,22 @@ void EventManager::_processEvents()
         int callbackListIdx = (int)e->getType();
         CallbacksList& callbacks = Callbacks[callbackListIdx];
 
-        bool holdEvent = false;
+        bool dropEvent = true;
         for (int j=0; j<callbacks.size(); j++)
         {
-            bool holdEventResponse = callbacks[j](e);
+            bool dropEventResponse = callbacks[j](e);
             if (e->isCanceled()){
-                holdEvent = false;
+                dropEvent = true;
                 break;
             }
-            holdEvent = holdEvent || holdEventResponse;
+            dropEvent = dropEvent && dropEventResponse;
         }
-        if (holdEvent){
-            _addEvent(e);
-            // move in memory
-        } else {
+
+        if (dropEvent){
             delete e;
+        } else {
+            addEvent(e);
+            // move in memory
         }
 
         i++;
@@ -90,11 +93,7 @@ void EventManager::_processEvents()
     isProcessing = false;
 }
 
-void EventManager::_addCallback(Event::EventType type, EventCallback callback)
+void EventManager::addCallback(Event::EventType type, EventCallback callback)
 {
-    int callbackListIdx = (int)type;
-    if (Callbacks.size() < (callbackListIdx+1)){
-        Callbacks.resize(callbackListIdx+1);
-    }
-    Callbacks[callbackListIdx].push_back(callback);
+    Callbacks[(int)type].push_back(callback);
 }

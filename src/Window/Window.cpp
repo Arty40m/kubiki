@@ -2,8 +2,17 @@
 #include "../logging.hpp"
 #include "Window.hpp"
 
+#include "../Events/Events.hpp"
+#include "../Events/EventManager.hpp"
 
-static void error_callback(int error, const char* description) {
+
+
+/* 
+    ============ Callbacks
+*/
+
+static void error_callback(int error, const char* description)
+{
     std::string es;
 
     switch (error) {
@@ -23,27 +32,44 @@ static void error_callback(int error, const char* description) {
 
     LOG_ERROR("GLFW error: {}\ndescription: {}", es, description);
 }
- 
-static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, GLFW_TRUE);
-}
 
-static void framebuffer_size_callback(GLFWwindow* window, int width, int height){
+static void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
     glViewport(0, 0, width, height);
 	Window::width = width;
 	Window::height = height;
 }
 
+static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    if (action == GLFW_PRESS || action == GLFW_RELEASE){
+        bool* keyStateWasChanged = (bool*)glfwGetWindowUserPointer(window);
+        keyStateWasChanged[key] = true;
+    }
+}
 
-Window& Window::GetInstance()
+static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+{
+    bool* keyStateWasChanged = (bool*)glfwGetWindowUserPointer(window);
+    keyStateWasChanged[button] = true;
+}
+
+static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+    EventManager::GetI().emplaceEvent<MouseScrolledEvent>((float)yoffset);
+}
+
+/* 
+    ============ Window
+*/
+
+Window& Window::GetI()
 {
     static Window instance;
     return instance;
 }
 
-void Window::_Init(int width, int height)
+void Window::Init(int width, int height)
 {
     Window::width = width;
 	Window::height = height;
@@ -73,10 +99,19 @@ void Window::_Init(int width, int height)
 
     glfwSetWindowSizeCallback(window, framebuffer_size_callback);
     glfwSetKeyCallback(window, key_callback);
-    // glfwSetCursorPosCallback(window, mouse_callback);
-	// glfwSetScrollCallback(window, scroll_callback);
-	// glfwSetMouseButtonCallback(window, mouse_button_callback);
+	glfwSetMouseButtonCallback(window, mouse_button_callback);
+	glfwSetScrollCallback(window, scroll_callback);
 
+    for (int i=0; i<NUMBER_KEYS; i++){
+        keyStateWasChanged[i] = false;
+        keyPressedArray[i] = false;
+    }
+    glfwSetWindowUserPointer(window, (void*)keyStateWasChanged);
+
+    double _x, _y;
+    glfwGetCursorPos(window, &_x, &_y);
+    curMouseX = (float)_x;
+    curMouseY = (float)_y;
 }
 
 Window::Window(){}
@@ -87,15 +122,80 @@ Window::~Window()
     glfwTerminate();
 }
 
-void Window::_PullEvents()
+void Window::PullEvents()
 {
     glfwPollEvents();
 
-    // Create input events
+    // Cursor pos
+    double _x, _y;
+    glfwGetCursorPos(window, &_x, &_y);
+    float x = (float)_x;
+    float y = (float)_y;
+
+    if (x!=curMouseX || y!=curMouseY)
+    {
+        prevMouseX = curMouseX;
+        prevMouseY = curMouseY;
+        curMouseX = x;
+        curMouseY = y;
+        EventManager::GetI().emplaceEvent<MouseMovedEvent>(curMouseX-prevMouseX, curMouseY-prevMouseY);
+    }
+
+    // Keys
+    float time = (float)glfwGetTime();
+    for (int i=0; i<NUMBER_KEYS; i++)
+    {
+        if (keyStateWasChanged[i] && (!keyPressedArray[i])) // Press
+        {
+            keyPressedArray[i] = true;
+            prevKeyPressTimeArray[i] = curKeyPressTimeArray[i];
+            prevKeyReleaseTimeArray[i] = curKeyReleaseTimeArray[i];
+            curKeyPressTimeArray[i] = time;
+
+            if (i<NUMBER_MOUSE_BUTTONS){
+                EventManager::GetI().emplaceEvent<MousePressedEvent>(i, 0.f);
+            } else {
+                EventManager::GetI().emplaceEvent<KeyPressedEvent>(i, 0.f);
+            }
+            keyStateWasChanged[i] = false;
+        }
+        else if (keyStateWasChanged[i] && keyPressedArray[i]) // Release
+        {
+            keyPressedArray[i] = false;
+            curKeyReleaseTimeArray[i] = time;
+            float duration = time - curKeyPressTimeArray[i];
+
+            if (i<NUMBER_MOUSE_BUTTONS){
+                EventManager::GetI().emplaceEvent<MouseReleasedEvent>(i, duration);
+            } else {
+                EventManager::GetI().emplaceEvent<KeyReleasedEvent>(i, duration);
+            }
+            keyStateWasChanged[i] = false;
+        }
+        else if (keyPressedArray[i]) // Hold
+        {
+            float duration = time - curKeyPressTimeArray[i];
+
+            if (i<NUMBER_MOUSE_BUTTONS){
+                EventManager::GetI().emplaceEvent<MousePressedEvent>(i, duration);
+            } else {
+                EventManager::GetI().emplaceEvent<KeyPressedEvent>(i, duration);
+            }
+        }
+    }
+
 }
 
-void Window::_clear()
+void Window::clear()
 {
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+const std::string& Window::getKeyName(int keycode) const
+{
+    if (keycode<0 || keycode>=NUMBER_KEYS){
+        return keyNameMap[NUMBER_KEYS];
+    }
+    return keyNameMap[keycode];
 }

@@ -3,6 +3,10 @@
 
 #include "Application.hpp"
 #include "Window/Window.hpp"
+#include "Events/Event.hpp"
+#include "Events/Events.hpp"
+#include "Events/EventManager.hpp"
+#include "Window/KeyCodes.hpp"
 
 #define GLAD_GL_IMPLEMENTATION
 #include <glad/glad.h>
@@ -14,17 +18,10 @@
 
 
 
-typedef struct Vertex
+struct Vertex
 {
     vec2 pos;
     vec3 col;
-} Vertex;
- 
-static const Vertex vertices[3] =
-{
-    { { -0.6f, -0.4f }, { 1.f, 0.f, 0.f } },
-    { {  0.6f, -0.4f }, { 0.f, 1.f, 0.f } },
-    { {   0.f,  0.6f }, { 0.f, 0.f, 1.f } }
 };
  
 static const char* vertex_shader_text =
@@ -49,9 +46,35 @@ static const char* fragment_shader_text =
 "}\n";
 
 
+bool trCallback(Vertex* v, Event* e)
+{
+    if (!Window::GetI().isKeyPressed(LEFT_MOUSE_BUTTON)){
+        return true;
+    }
+
+    MouseMovedEvent* E = (MouseMovedEvent*)e;
+    float dx = E->dx;
+    float dy = E->dy;
+
+    for (int i=0; i<3; i++)
+    {
+        v[i].pos[0] = v[i].pos[0] + dx*0.01f;
+        v[i].pos[1] = v[i].pos[1] - dy*0.01f;
+    }
+    return true;
+}
+
 int Application::run()
 {
-    Window::Init(640, 480);
+    Window::GetI().Init(640, 480);
+    EventManager::GetI().Init();
+
+    Vertex vertices[3] =
+    {
+        { { -0.6f, -0.4f }, { 1.f, 0.f, 0.f } },
+        { {  0.6f, -0.4f }, { 0.f, 1.f, 0.f } },
+        { {   0.f,  0.6f }, { 0.f, 0.f, 1.f } }
+    };
 
     GLuint vertex_buffer;
     glGenBuffers(1, &vertex_buffer);
@@ -85,17 +108,51 @@ int Application::run()
     glVertexAttribPointer(vcol_location, 3, GL_FLOAT, GL_FALSE,
                         sizeof(Vertex), (void*) offsetof(Vertex, col));
 
-    while (!Window::isShouldClose())
-    {
-        Window::SwapBuffers();
-        Window::clear();
-        Window::PullEvents();
-        // LOG_DEBUG("Ratio: {}", ratio);
 
-        const float ratio = Window::getAspectRatio();
+    EventManager::GetI().addCallback(Event::EventType::MOUSE_MOVED_E, std::bind(trCallback, vertices, std::placeholders::_1));
+
+    // EventManager::GetI().addCallback(Event::EventType::MOUSE_PRESSED_E, [](Event* e){
+    //     LOG_INFO("{}", e->repr());
+    //     return true;
+    // });
+
+    EventManager::GetI().addCallback(Event::EventType::MOUSE_RELEASED_E, [](Event* e){
+        LOG_INFO("{}", e->repr());
+        return true;
+    });
+
+    // EventManager::GetI().addCallback(Event::EventType::TEST_E, [](Event* e){
+    //     LOG_INFO("TEST E created: {}", e->repr());
+    //     return true;
+    // });
+
+    EventManager::GetI().addCallback(Event::EventType::KEY_PRESSED_E, [](Event* e){
+        KeyPressedEvent* E = (KeyPressedEvent*)e;
+        if (E->keycode == KEY_ESCAPE){
+            Window::GetI().close();
+        }
+        return true;
+    });
+
+    EventManager::GetI().addCallback(Event::EventType::KEY_RELEASED_E, [](Event* e){
+        LOG_INFO("{}", e->repr());
+        return true;
+    });
+
+    while (!Window::GetI().isShouldClose())
+    {
+        Window::GetI().SwapBuffers();
+        Window::GetI().clear();
+        Window::GetI().PullEvents();
+        EventManager::GetI().processEvents();
+
+        glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+        const float ratio = Window::GetI().getAspectRatio();
         mat4x4 m, p, mvp;
         mat4x4_identity(m);
-        mat4x4_rotate_Z(m, m, (float) glfwGetTime());
+        // mat4x4_rotate_Z(m, m, (float) glfwGetTime());
         mat4x4_ortho(p, -ratio, ratio, -1.f, 1.f, 1.f, -1.f);
         mat4x4_mul(mvp, p, m);
 

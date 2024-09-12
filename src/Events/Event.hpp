@@ -7,35 +7,37 @@ public:
     enum class EventType : int
     {
         // KEYS
-        KEY_PRESSED = 1,
-        KEY_HOLD,
-        KEY_RELEASED,
-        KEY_CLICKED,
+        TEST_E = 0,
+        KEY_PRESSED_E,
+        KEY_RELEASED_E,
+        KEY_CLICKED_E,
 
         // MOUSE
-        MOUSE_MOVED,
-        MOUSE_SCROLLED,
+        MOUSE_MOVED_E,
+        MOUSE_SCROLLED_E,
 
-        MOUSE_PRESSED,
-        MOUSE_HOLD,
-        MOUSE_RELEASED,
-        MOUSE_CLICKED,
+        MOUSE_PRESSED_E,
+        MOUSE_RELEASED_E,
+        MOUSE_CLICKED_E,
 
         // OTHER
-        PLAYER_MOVED
+        PLAYER_MOVED,
+
+        //
+        COUNT
     };
 
 protected:
     EventType type;
-    bool isCanceled;
-    Event(EventType type): type(type), isCanceled(false){}
+    bool canceled;
+    Event(EventType type): type(type), canceled(false){}
 
 public:
-    virtual ~Event() = 0;
+    ~Event() = default;
     Event(const Event&) = delete;
 
     virtual std::string repr() = 0;
     inline EventType getType() const {return type;}
-    inline bool isCanceled() const {return isCanceled;}
-    inline void cancel() {isCanceled = true;}
+    inline bool isCanceled() const {return canceled;}
+    inline void cancel() {canceled = true;}
 };
