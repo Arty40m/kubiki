@@ -6,10 +6,12 @@
 
 
 EventManager::EventManager():
-    firstBufferIsCurrent(true),
-    isProcessing(false) {}
+    firstBufferIsCurrent(true){}
 
-EventManager::~EventManager() {}
+EventManager::~EventManager() {
+    LOG_DEBUG("Final stack1 cap: {}", eStack1.capacity());
+    LOG_DEBUG("Final stack2 cap: {}", eStack2.capacity());
+}
 
 EventManager& EventManager::GetI()
 {
@@ -22,29 +24,8 @@ void EventManager::Init(int initEventBufferSize)
     eBuffer1.reserve(initEventBufferSize);
     eBuffer2.reserve(initEventBufferSize);
     Callbacks.resize((int)Event::EventType::COUNT);
-}
 
-void EventManager::addEvent(Event* e)
-{
-    if (firstBufferIsCurrent){
-        eBuffer1.push_back(e);
-    } else {
-        eBuffer2.push_back(e);
-    }
-}
-
-void EventManager::addEventThisFrame(Event* e)
-{
-    if (isProcessing)
-    {
-        if (firstBufferIsCurrent){
-            eBuffer2.push_back(e);
-        } else {
-            eBuffer1.push_back(e);
-        }
-    } else {
-        addEvent(e);
-    }
+    // eStack1
 }
 
 int EventManager::numEvents() const
@@ -58,14 +39,16 @@ int EventManager::numEvents() const
 
 void EventManager::processEvents()
 {
-    std::vector<Event*>& eBuffer = (firstBufferIsCurrent) ? eBuffer1 : eBuffer2;
+    EventBuffer& eBuffer = (firstBufferIsCurrent) ? eBuffer1 : eBuffer2;
+    EventBuffer& eBufferNext = (firstBufferIsCurrent) ? eBuffer2 : eBuffer1;
+    Stack& eStack = (firstBufferIsCurrent) ? eStack1 : eStack2;
+    Stack& eStackNext = (firstBufferIsCurrent) ? eStack2 : eStack1;
     firstBufferIsCurrent = !firstBufferIsCurrent;
-    isProcessing = true;
 
     int i = 0;
     while (i < eBuffer.size())
     {
-        Event* e = eBuffer[i];
+        auto [e, eSize] = eBuffer[i];
         int callbackListIdx = (int)e->getType();
         CallbacksList& callbacks = Callbacks[callbackListIdx];
 
@@ -80,17 +63,16 @@ void EventManager::processEvents()
             dropEvent = dropEvent && dropEventResponse;
         }
 
-        if (dropEvent){
-            delete e;
-        } else {
-            addEvent(e);
-            // move in memory
+        // if (dropEvent){delete e;} else {addEvent(e);}
+        if (!dropEvent){
+            eBufferNext.push_back({e, eSize});
+            std::memcpy(eStackNext.aloc(sizeof(eSize)), e, eSize);
         }
 
         i++;
     }
     eBuffer.clear();
-    isProcessing = false;
+    eStack.clear();
 }
 
 void EventManager::addCallback(Event::EventType type, EventCallback callback)

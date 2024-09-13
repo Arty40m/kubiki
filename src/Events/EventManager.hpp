@@ -1,11 +1,13 @@
 #pragma once
 #include "../stl_headers.hpp"
 #include "Event.hpp"
+#include "../DataStructures/Stack.hpp"
 
 
 class EventManager
 {
 public:
+    typedef std::vector<std::pair<Event*, size_t>> EventBuffer;
     typedef std::function<bool(Event*)> EventCallback;
     typedef std::vector<EventCallback> CallbacksList;
 
@@ -16,26 +18,19 @@ public:
 
     // Instance methods
     void Init(int initEventBufferSize = 128);
-    void addEvent(Event* e);
-    void addEventThisFrame(Event* e);
     int numEvents() const;
     void processEvents();
     void addCallback(Event::EventType type, EventCallback callback);
 
     template<typename E, typename... Types>
-    E* createEvent(Types&& ... args);
-
-    template<typename E, typename... Types>
     void emplaceEvent(Types&& ... args);
 
-    template<typename E, typename... Types>
-    void emplaceEventThisFrame(Types&& ... args);
-
 private:
-    std::vector<Event*> eBuffer1;
-    std::vector<Event*> eBuffer2;
+    EventBuffer eBuffer1;
+    EventBuffer eBuffer2;
+    Stack eStack1;
+    Stack eStack2;
     bool firstBufferIsCurrent;
-    bool isProcessing;
 
     std::vector<CallbacksList> Callbacks;
 
@@ -44,22 +39,12 @@ private:
 };
 
 
-// Create event
 template<typename E, typename... Types>
-E* EventManager::createEvent(Types&& ... args)
+void EventManager::emplaceEvent(Types&& ... args)
 {
-    return new E(args...);
-}
+    EventBuffer& eBuffer = (firstBufferIsCurrent) ? eBuffer1 : eBuffer2;
+    Stack& eStack = (firstBufferIsCurrent) ? eStack1 : eStack2;
 
-// Emplace event instance methods
-template<typename E, typename... Types>
-void EventManager::emplaceEvent(Types&& ... args){
-    Event* e = (Event*)createEvent<E>(std::forward<Types>(args)...);
-    return EventManager::addEvent(e);
-}
-
-template<typename E, typename... Types>
-void EventManager::emplaceEventThisFrame(Types&& ... args){
-    Event* e = (Event*)createEvent<E>(std::forward<Types>(args)...);
-    return EventManager::addEventThisFrame(e);
+    Event* e = (Event*)(new (eStack.aloc(sizeof(E))) E(args...));
+    eBuffer.push_back({e, sizeof(E)});
 }

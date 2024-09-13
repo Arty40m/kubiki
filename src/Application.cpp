@@ -7,6 +7,7 @@
 #include "Events/Events.hpp"
 #include "Events/EventManager.hpp"
 #include "Window/KeyCodes.hpp"
+#include "DataStructures/Stack.hpp"
 
 #define GLAD_GL_IMPLEMENTATION
 #include <glad/glad.h>
@@ -118,13 +119,14 @@ int Application::run()
 
     EventManager::GetI().addCallback(Event::EventType::MOUSE_RELEASED_E, [](Event* e){
         LOG_INFO("{}", e->repr());
+        EventManager::GetI().emplaceEvent<TestEvent>();
         return true;
     });
 
-    // EventManager::GetI().addCallback(Event::EventType::TEST_E, [](Event* e){
-    //     LOG_INFO("TEST E created: {}", e->repr());
-    //     return true;
-    // });
+    EventManager::GetI().addCallback(Event::EventType::TEST_E, [](Event* e){
+        LOG_INFO("TEST E created: {}", e->repr());
+        return true;
+    });
 
     EventManager::GetI().addCallback(Event::EventType::KEY_PRESSED_E, [](Event* e){
         KeyPressedEvent* E = (KeyPressedEvent*)e;

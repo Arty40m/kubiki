@@ -75,7 +75,6 @@ public:
     inline static const std::string name = "MouseMovedEvent";
     float dx;
     float dy;
-    char c[1024];
 
     MouseMovedEvent(float dx, float dy): 
     Event(Event::EventType::MOUSE_MOVED_E), dx(dx), dy(dy){}

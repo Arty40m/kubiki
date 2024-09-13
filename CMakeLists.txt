@@ -9,6 +9,8 @@ add_subdirectory("deps/glad")
 add_executable(kubiki src/main.cpp src/Application.cpp
                 src/Window/Window.cpp
                 src/Events/EventManager.cpp
+                src/DataStructures/DynamicBuffer.cpp
+                src/DataStructures/Stack.cpp
 )
 
 target_include_directories(kubiki PUBLIC "deps/glfw/include/")
