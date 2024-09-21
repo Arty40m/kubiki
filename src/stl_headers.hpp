@@ -4,6 +4,7 @@
 #include <vector>
 #include <ctime>
 
+#include <cassert>
 #include <cstring>
 #include <cstdint>
 #include <cstddef>
@@ -11,5 +12,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdexcept>
+#include <fstream>
+#include <sstream>
 
 #include <functional>

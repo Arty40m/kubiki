@@ -57,6 +57,7 @@ namespace LOGGING
     std::cout << "Hello, Other!" << '\n';
     #endif
 
+    inline std::string _to_string(char* x){return std::string(x);}
     inline std::string _to_string(const char* x){return std::string(x);}
     inline std::string _to_string(const unsigned char* x){return std::string((const char*)x);}
     inline std::string _to_string(std::string& x){return x;}

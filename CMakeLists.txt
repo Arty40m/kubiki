@@ -11,10 +11,12 @@ add_executable(kubiki src/main.cpp src/Application.cpp
                 src/Events/EventManager.cpp
                 src/DataStructures/DynamicBuffer.cpp
                 src/DataStructures/Stack.cpp
+                src/Graphic/Rendering/Renderer.cpp src/Graphic/Rendering/Shader.cpp
 )
 
+target_precompile_headers(kubiki PRIVATE src/stl_headers.hpp)
+
 target_include_directories(kubiki PUBLIC "deps/glfw/include/")
-target_include_directories(kubiki PUBLIC "deps/glfw/deps/")
 target_include_directories(kubiki PUBLIC "deps/glad/include/")
 target_include_directories(kubiki PUBLIC "deps/glm/")
 

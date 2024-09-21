@@ -82,6 +82,7 @@ void Window::Init(int width, int height)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
 
     window = glfwCreateWindow(width, height, "kubiki", NULL, NULL);
     if (window==nullptr)
@@ -184,12 +185,6 @@ void Window::PullEvents()
         }
     }
 
-}
-
-void Window::clear()
-{
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 const std::string& Window::getKeyName(int keycode) const

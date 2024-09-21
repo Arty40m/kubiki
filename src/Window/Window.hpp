@@ -26,7 +26,6 @@ public:
     inline void SwapBuffers() const {glfwSwapBuffers(window);}
     inline bool isShouldClose() const {return glfwWindowShouldClose(window);}
     inline void close() const {glfwSetWindowShouldClose(window, true);}
-    void clear();
     inline float getAspectRatio() const {return (float)Window::width / (float)Window::height;}
 
     inline double getTime() const {return glfwGetTime();}
