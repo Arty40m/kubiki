@@ -1,6 +1,6 @@
 #pragma once
-#include "../stl_headers.hpp"
-#include "../logging.hpp"
+#include "stlh.hpp"
+#include "logging.hpp"
 #define GLAD_GL_IMPLEMENTATION
 #include <glad/glad.h>
 

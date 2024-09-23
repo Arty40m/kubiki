@@ -1,6 +1,6 @@
 #pragma once
-#include "../../stl_headers.hpp"
-#include "../../logging.hpp"
+#include "stlh.hpp"
+#include "logging.hpp"
 
 #include "../Mesh/BaseMesh.hpp"
 #include <glm/vec2.hpp>

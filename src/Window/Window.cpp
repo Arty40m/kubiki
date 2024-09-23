@@ -1,6 +1,5 @@
-#include "../stl_headers.hpp"
-#include "../logging.hpp"
 #include "Window.hpp"
+#include "logging.hpp"
 
 #include "../Events/Events.hpp"
 #include "../Events/EventManager.hpp"

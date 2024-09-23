@@ -16,10 +16,10 @@ private:
     
 };
 
-BaseMesh::BaseMesh()
+inline BaseMesh::BaseMesh(): Mesh()
 {
 }
 
-BaseMesh::~BaseMesh()
+inline BaseMesh::~BaseMesh()
 {
 }

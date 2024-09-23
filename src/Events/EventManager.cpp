@@ -1,5 +1,4 @@
-#include "../stl_headers.hpp"
-#include "../logging.hpp"
+#include "logging.hpp"
 #include "Event.hpp"
 #include "EventManager.hpp"
 

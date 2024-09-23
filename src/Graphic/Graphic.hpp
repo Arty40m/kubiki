@@ -3,16 +3,14 @@
 #include "Rendering/Shader.hpp"
 
 // Pipelines
-#include "Rendering/Pipelines/TestPipeline.hpp"
+#include "Rendering/Pipelines/PrimitivePipeline.hpp"
 
 // Vertices
 #include "Vertices/BaseVertex.hpp"
 
 // Buffers
 #include "Buffers/VertexBuffer.hpp"
-
-#include "glBuffers/VBO.hpp"
-#include "glBuffers/VAO.hpp"
+#include "Rendering/glBuffers.hpp"
 
 // Meshes
 #include "Mesh/BaseMesh.hpp"

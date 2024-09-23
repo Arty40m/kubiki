@@ -1,5 +1,5 @@
 #pragma once
-#include "../../stl_headers.hpp"
+#include "stlh.hpp"
 
 #define GLAD_GL_IMPLEMENTATION
 #include <glad/glad.h>

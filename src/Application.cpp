@@ -1,6 +1,3 @@
-#include "stl_headers.hpp"
-#include "logging.hpp"
-
 #include "Application.hpp"
 #include "Window/Window.hpp"
 #include "Events/Event.hpp"
@@ -47,13 +44,13 @@ int Application::run()
     Renderer::GetI().Init();
     EventManager::GetI().Init();
 
-    TestPipeline testPipe;
+    PrimitivePipeline testPipe;
     testPipe.shader.Init("D:\\kubiki\\resources\\shaders\\vertex.shader", "D:\\kubiki\\resources\\shaders\\fragment.shader");
     
     Triangle triangle;
     testPipe.addMesh(&triangle.mesh);
     testPipe.enable();
-    Renderer::GetI().addPipeline("TestPipeline", &testPipe);
+    Renderer::GetI().addPipeline("PrimitivePipeline", &testPipe);
 
     EventManager::GetI().addCallback(Event::EventType::MOUSE_MOVED_E, std::bind(trCallback, &triangle, std::placeholders::_1));
     EventManager::GetI().addCallback(Event::EventType::MOUSE_SCROLLED_E, std::bind(scrollCallback, &triangle, std::placeholders::_1));

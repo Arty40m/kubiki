@@ -1,5 +1,5 @@
 #include "Renderer.hpp"
-#include "../../logging.hpp"
+#include "logging.hpp"
 
 
 
@@ -95,7 +95,7 @@ void Renderer::render()
     }
 }
 
-void Renderer::addPipeline(std::string&& name, Pipeline* p)
+void Renderer::addPipeline(const std::string& name, Pipeline* p)
 {
     if (pipeNameIdxMap.find(name)!=pipeNameIdxMap.end()){
         std::string err = "Pipeline " + name + " is already registered";
@@ -106,7 +106,7 @@ void Renderer::addPipeline(std::string&& name, Pipeline* p)
     pipelinePtrs.push_back(p);
 }
 
-Pipeline* Renderer::getPipeline(std::string&& name)
+Pipeline* Renderer::getPipeline(const std::string& name)
 {
     if (pipeNameIdxMap.find(name)==pipeNameIdxMap.end()){
         return nullptr;
