@@ -40,15 +40,7 @@ inline void PrimitivePipeline::render()
     shader.use();
     vao.bind();
 
-    glm::vec3 pos = {0.0f, 0.0f, 2.0f};
-    glm::vec3 dirvec = {0.0f, 0.0f, -1.0f};
-    glm::vec3 UP = {0.0f, 1.0f, 0.0f};
-
-    float ratio = Window::GetI().getAspectRatio();
-    glm::mat4 Projection = glm::perspective(glm::radians(120.0f), ratio, 0.01f, 100.0f);
-    glm::mat4 View = glm::lookAt(pos, pos+dirvec, UP);
-    glm::mat4 MVP = Projection*View;
-
+    glm::mat4 MVP = camera->getMVP();
     shader.setUniformMatrix4fv("MVP", (const GLfloat*) glm::value_ptr(MVP));
 
     for (int i=0; i<meshPtrs.size(); i++)

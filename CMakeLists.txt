@@ -17,6 +17,8 @@ add_executable(kubiki
                 src/Graphic/Rendering/Shader.cpp
                 src/Graphic/Rendering/glBuffers.cpp
                 src/Graphic/Rendering/Pipelines/PrimitivePipeline.cpp
+
+                src/Camera/Camera.cpp
 )
 
 target_precompile_headers(kubiki PRIVATE src/stlh.hpp)

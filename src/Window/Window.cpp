@@ -112,6 +112,8 @@ void Window::Init(int width, int height)
     glfwGetCursorPos(window, &_x, &_y);
     curMouseX = (float)_x;
     curMouseY = (float)_y;
+
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
 Window::Window(){}
