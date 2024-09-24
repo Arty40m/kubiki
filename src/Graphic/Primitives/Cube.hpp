@@ -7,48 +7,42 @@
 #include <glm/vec3.hpp>
 
 
-class Triangle
+class Cube
 {
 public:
     BaseMesh mesh;
     glm::vec3 P;
     
-    Triangle();
-    Triangle(glm::vec3 pos);
-    ~Triangle();
+    Cube();
+    Cube(glm::vec3 pos);
+    ~Cube();
 
     void build(glm::vec3 pos);
     void translate(glm::vec3 d);
 };
 
-inline Triangle::Triangle(): P(glm::vec3(0.0f))
+inline Cube::Cube(): P(glm::vec3(0.0f))
 {
     build(P);
 }
 
-inline Triangle::Triangle(glm::vec3 pos): P(pos)
+inline Cube::Cube(glm::vec3 pos): P(pos)
 {
     build(P);
 }
 
-inline Triangle::~Triangle(){}
+inline Cube::~Cube(){}
 
-void Triangle::build(glm::vec3 pos)
+void Cube::build(glm::vec3 pos)
 {
     mesh.vb.clear();
     mesh.vb.addVertex(glm::vec3(-0.6f, -0.4f, 0.0f) + pos, glm::vec3(1.f, 0.f, 0.f));
     mesh.vb.addVertex(glm::vec3(0.6f, -0.4f, 0.0f) + pos, glm::vec3(0.f, 1.f, 0.f));
     mesh.vb.addVertex(glm::vec3(0.f,  0.6f, 0.0f) + pos, glm::vec3(0.f, 0.f, 1.f));
-    
-    mesh.ib.clear();
-    mesh.ib.addIndex(0);
-    mesh.ib.addIndex(1);
-    mesh.ib.addIndex(2);
-    
     mesh.modified = true;
 }
 
-void Triangle::translate(glm::vec3 d)
+void Cube::translate(glm::vec3 d)
 {
     P += d;
     build(P);

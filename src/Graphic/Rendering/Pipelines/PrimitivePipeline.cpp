@@ -21,10 +21,10 @@ void PrimitivePipeline::addMesh(Mesh* meshPtr)
     if (mp->vbop == nullptr)
     {
         mp->vbop = new VBO();
-        // mp->ibop = new IBO();
+        mp->ibop = new IBO();
 
         mp->vbop->setStaticData(mp->vb.getDataPtr(), mp->vb.sizeBytes());
-        // mp->ibop->setStaticData(mp->ib.getDataPtr(), mp->ib.sizeBytes());
+        mp->ibop->setStaticData(mp->ib.getDataPtr(), mp->ib.sizeBytes());
 
         vao.bind();
         vao.setFloatAttribute(0, 3, mp->vb.vertexSize, 0);
@@ -48,12 +48,14 @@ inline void PrimitivePipeline::render()
         BaseMesh* mp = (BaseMesh*)meshPtrs[i];
 
         mp->vbop->bind();
-        // mesh->ibo.bind();
+        mp->ibop->bind();
         if (mp->modified){
             mp->vbop->setStaticData(mp->vb.getDataPtr(), mp->vb.sizeBytes());
+            mp->ibop->setStaticData(mp->ib.getDataPtr(), mp->ib.sizeBytes());
             mp->modified = false;
         }
 
-        GLCall(glDrawArrays(GL_TRIANGLES, 0, mp->vb.size()));
+        // GLCall(glDrawArrays(GL_TRIANGLES, 0, mp->vb.size()));
+        GLCall(glDrawElements(GL_TRIANGLES, mp->ib.size(), GL_UNSIGNED_INT, nullptr););
     }
 };
