@@ -3,24 +3,21 @@
 
 #include "../Pipeline.hpp"
 #include "../../Rendering/glBuffers.hpp"
-#include "../../Mesh/Mesh.hpp"
-#include "../../Mesh/PrimitiveMesh.hpp"
+#include "../../Mesh/SkyBoxMesh.hpp"
 #include "../../Vertices.hpp"
 #include "../../../Camera/Camera.hpp"
 
 
-class PrimitivePipeline: public Pipeline
+class SkyBoxPipeline: public Pipeline
 {
 public:
-    PrimitivePipeline();
-    ~PrimitivePipeline();
+    SkyBoxPipeline();
+    ~SkyBoxPipeline();
 
     void render() override;
-    void addMesh(Mesh* meshPtr);
 
     Camera* camera;
 
 private:
-    std::vector<Mesh*> meshPtrs;
-    
+    SkyBoxMesh mesh;
 };

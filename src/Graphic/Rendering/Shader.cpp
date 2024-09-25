@@ -29,6 +29,22 @@ void Shader::Init(const std::string& vertexShaderPath, const std::string& fragme
     glDeleteShader(fs);
 }
 
+void Shader::use() const
+{
+    if (shaderId==0){
+        throw std::runtime_error("Can not use uninitialized shader");
+    }
+    glUseProgram(shaderId);
+}
+
+void Shader::off() const
+{
+    if (shaderId==0){
+        throw std::runtime_error("Can not off uninitialized shader");
+    }
+    glUseProgram(0);
+}
+
 int Shader::getUniformLocation(const std::string& name)
 {
     if (uniformLocationMap.find(name) != uniformLocationMap.end())
@@ -84,25 +100,23 @@ uint32_t Shader::compileShader(uint32_t shaderType, const std::string& src)
 
 // Uniforms
 
+void Shader::setUniform1f(const std::string& name, float data)
+{
+    int location = getUniformLocation(name);
+    assert(location != -1);
+    glUniform1f(location, data);
+}
+
+void Shader::setUniformVector3fv(const std::string& name, const float* data)
+{
+    int location = getUniformLocation(name);
+    assert(location != -1);
+    glUniform3fv(location, 1, data);
+}
+
 void Shader::setUniformMatrix4fv(const std::string& name, const float* data)
 {
     int location = getUniformLocation(name);
     assert(location != -1);
     glUniformMatrix4fv(location, 1, GL_FALSE, data);
-}
-
-void Shader::use() const
-{
-    if (shaderId==0){
-        throw std::runtime_error("Can not use uninitialized shader");
-    }
-    glUseProgram(shaderId);
-}
-
-void Shader::off() const
-{
-    if (shaderId==0){
-        throw std::runtime_error("Can not off uninitialized shader");
-    }
-    glUseProgram(0);
 }

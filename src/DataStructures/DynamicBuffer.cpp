@@ -12,6 +12,22 @@ DynamicBuffer::DynamicBuffer():
     setFloatIncrement(2.f);
 }
 
+DynamicBuffer::~DynamicBuffer()
+{
+    delete[] data;
+}
+
+DynamicBuffer::DynamicBuffer(const DynamicBuffer& obj)
+{
+    floatIncrement = obj.floatIncrement;
+    fIncrement = obj.fIncrement;
+    iIncrement = obj.iIncrement;
+    _capacity = obj._capacity;
+    
+    data = new std::byte[obj._capacity];
+    std::memcpy(data, obj.data, _capacity);
+}
+
 void DynamicBuffer::setFloatIncrement(float increment)
 {
     if (increment<=1.0f){

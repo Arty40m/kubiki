@@ -2,7 +2,7 @@
 #include "stlh.hpp"
 #include "logging.hpp"
 
-#include "../Mesh/BaseMesh.hpp"
+#include "../Mesh/PrimitiveMesh.hpp"
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 
@@ -10,7 +10,7 @@
 class Triangle
 {
 public:
-    BaseMesh mesh;
+    PrimitiveMesh mesh;
     glm::vec3 P;
     
     Triangle();
@@ -44,8 +44,6 @@ void Triangle::build(glm::vec3 pos)
     mesh.ib.addIndex(0);
     mesh.ib.addIndex(1);
     mesh.ib.addIndex(2);
-    
-    mesh.modified = true;
 }
 
 void Triangle::translate(glm::vec3 d)

@@ -17,6 +17,7 @@ add_executable(kubiki
                 src/Graphic/Rendering/Shader.cpp
                 src/Graphic/Rendering/glBuffers.cpp
                 src/Graphic/Rendering/Pipelines/PrimitivePipeline.cpp
+                src/Graphic/Rendering/Pipelines/SkyBoxPipeline.cpp
 
                 src/Camera/Camera.cpp
 )

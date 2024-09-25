@@ -6,7 +6,8 @@ class DynamicBuffer
 {
 public:
     DynamicBuffer();
-    ~DynamicBuffer() {delete[] data;}
+    ~DynamicBuffer();
+    DynamicBuffer(const DynamicBuffer& obj);
 
     void setFloatIncrement(float increment);
     void setIntIncrement(uint32_t increment);

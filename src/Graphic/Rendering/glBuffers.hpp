@@ -16,7 +16,7 @@ public:
     inline uint32_t size() const {return _size;}
     void setStaticData(const void* data, uint32_t size);
 
-private:
+// private:
     uint32_t id;
     uint32_t _size;
 };
@@ -34,7 +34,7 @@ public:
     inline uint32_t size() const {return _size;}
     void setStaticData(const void* data, uint32_t size);
 
-private:
+// private:
     uint32_t id;
     uint32_t _size;
 };
@@ -51,6 +51,6 @@ public:
     void unbind() const;
     void setFloatAttribute(uint32_t index, int size, int stride, int64_t offset);
 
-private:
+// private:
     uint32_t id;
 };

@@ -5,7 +5,7 @@
 
 
 Camera::Camera():
-    pos(glm::vec3({0.0f, 0.0f, 2.0f})),
+    pos(glm::vec3({0.0f, 0.0f, 5.0f})),
     dir(glm::vec3({0.0f, 0.0f, -1.0f})),
     upv(glm::vec3({0.0f, 1.0f, 0.0f})),
     yaw(1.5f * glm::pi<float>()),

@@ -19,9 +19,9 @@ public:
 
     // Uniforms
     // void setUniform1i(const std::string& name, int data);
-    // void setUniform1f(const std::string& name, float data);
+    void setUniform1f(const std::string& name, float data);
 
-    // void setUniformVector3fv(const std::string& name, const float* data);
+    void setUniformVector3fv(const std::string& name, const float* data);
     void setUniformMatrix4fv(const std::string& name, const float* data);
 
 private:

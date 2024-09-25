@@ -1,6 +1,7 @@
 #pragma once
 #include "stlh.hpp"
 #include "../../DataStructures/DynamicBuffer.hpp"
+#include "logging.hpp"
 
 
 #define _VERTEX_BUFFER_INCREMENT 8
@@ -34,9 +35,7 @@ VertexBuffer<V>::VertexBuffer(): _size(0)
 }
 
 template<typename V>
-VertexBuffer<V>::~VertexBuffer()
-{
-}
+VertexBuffer<V>::~VertexBuffer(){}
 
 template<typename V>
 template<typename... Types>

@@ -10,6 +10,7 @@ public:
     bool modified;
     VBO* vbop;
     IBO* ibop;
+    VAO* vaop;
 
     Mesh();
     ~Mesh();

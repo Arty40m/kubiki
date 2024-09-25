@@ -43,22 +43,23 @@ static bool walkCallback(Camera* camera, Event* e)
 {
     KeyPressedEvent* E = (KeyPressedEvent*)e;
     int keycode = E->keycode;
+    float sens = 0.005;
 
     if (keycode==KEY_D || keycode==KEY_A)
     {
         float sign = (keycode==KEY_D) ? 1.0f : -1.0f;
-        glm::vec3 right = glm::cross(camera->dir, camera->upv);
-        camera->pos += 0.001f * sign * right;
+        glm::vec3 right = glm::normalize(glm::cross(camera->dir, camera->upv));
+        camera->pos += sens * sign * right;
     }
     else if (keycode==KEY_W || keycode==KEY_S)
     {
         float sign = (keycode==KEY_W) ? 1.0f : -1.0f;
-        camera->pos += 0.001f * sign * camera->dir;
+        camera->pos += sens * sign * camera->dir;
     }
     else if (keycode==KEY_SPACE || keycode==KEY_LEFT_SHIFT)
     {
         float sign = (keycode==KEY_SPACE) ? 1.0f : -1.0f;
-        camera->pos.y += 0.001f * sign;
+        camera->pos.y += sens * sign;
     }
 
     return true;
@@ -101,23 +102,45 @@ static bool cameraMoveCallback(Camera* camera, Event* e)
 
 int Application::run()
 {
-    Window::GetI().Init(640, 480);
+    Window::GetI().Init(1024, 768);
     Renderer::GetI().Init();
     EventManager::GetI().Init();
 
     Camera camera;
+
     PrimitivePipeline primitivePipe;
     primitivePipe.camera = &camera;
-
     primitivePipe.shader.Init("D:\\kubiki\\resources\\shaders\\vertex.shader", "D:\\kubiki\\resources\\shaders\\fragment.shader");
     
+    Triangle triangle2({2.0f, 0.0f, 1.0f});
+    primitivePipe.addMesh(&triangle2.mesh);
     Triangle triangle;
     primitivePipe.addMesh(&triangle.mesh);
+
+    std::vector<Cube> cubeVec;
+    for (int x=-50; x<50; x+=2){
+        for (int z=-50; z<50; z+=2){
+            glm::vec3 pos = {(float)x, -2.0f, (float)z};
+            cubeVec.emplace_back(pos);
+        }
+    }
+
+    for (int i=0; i<cubeVec.size(); i++){
+        primitivePipe.addMesh(&(cubeVec[i].mesh));
+    }
+
     primitivePipe.enable();
     Renderer::GetI().addPipeline("PrimitivePipeline", &primitivePipe);
 
-    EventManager::GetI().addCallback(Event::EventType::MOUSE_MOVED_E, std::bind(trCallback, &triangle, std::placeholders::_1));
-    EventManager::GetI().addCallback(Event::EventType::MOUSE_SCROLLED_E, std::bind(scrollCallback, &triangle, std::placeholders::_1));
+
+    SkyBoxPipeline skyboxPipe;
+    skyboxPipe.camera = &camera;
+    skyboxPipe.shader.Init("D:\\kubiki\\resources\\shaders\\skyBoxVertex.shader", "D:\\kubiki\\resources\\shaders\\skyBoxFragment.shader");
+    skyboxPipe.enable();
+    Renderer::GetI().addPipeline("SkyBoxPipeline", &skyboxPipe);
+
+    // EventManager::GetI().addCallback(Event::EventType::MOUSE_MOVED_E, std::bind(trCallback, &triangle, std::placeholders::_1));
+    // EventManager::GetI().addCallback(Event::EventType::MOUSE_SCROLLED_E, std::bind(scrollCallback, &triangle, std::placeholders::_1));
 
     EventManager::GetI().addCallback(Event::EventType::KEY_PRESSED_E, std::bind(walkCallback, &camera, std::placeholders::_1));
     EventManager::GetI().addCallback(Event::EventType::MOUSE_MOVED_E, std::bind(cameraMoveCallback, &camera, std::placeholders::_1));
