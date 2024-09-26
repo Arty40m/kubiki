@@ -3,7 +3,9 @@
         {
             "name": "Win32",
             "includePath": [
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/deps/imgui/**",
+                "${workspaceFolder}/deps/imgui/backends/*"
             ],
             "defines": [
                 "_DEBUG",
