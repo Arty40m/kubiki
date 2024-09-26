@@ -17,6 +17,11 @@
 #include <glm/vec3.hpp>
 #include <glm/ext.hpp>
 
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
+
+
 
 static bool trCallback(Triangle* t, Event* e)
 {
@@ -108,6 +113,14 @@ int Application::run()
 
     Camera camera;
 
+    // Sky Box
+    SkyBoxPipeline skyboxPipe;
+    skyboxPipe.camera = &camera;
+    skyboxPipe.shader.Init("D:\\kubiki\\resources\\shaders\\skyBoxVertex.shader", "D:\\kubiki\\resources\\shaders\\skyBoxFragment.shader");
+    skyboxPipe.enable();
+    Renderer::GetI().addPipeline("SkyBoxPipeline", &skyboxPipe);
+
+    // Primitives
     PrimitivePipeline primitivePipe;
     primitivePipe.camera = &camera;
     primitivePipe.shader.Init("D:\\kubiki\\resources\\shaders\\vertex.shader", "D:\\kubiki\\resources\\shaders\\fragment.shader");
@@ -132,16 +145,7 @@ int Application::run()
     primitivePipe.enable();
     Renderer::GetI().addPipeline("PrimitivePipeline", &primitivePipe);
 
-
-    SkyBoxPipeline skyboxPipe;
-    skyboxPipe.camera = &camera;
-    skyboxPipe.shader.Init("D:\\kubiki\\resources\\shaders\\skyBoxVertex.shader", "D:\\kubiki\\resources\\shaders\\skyBoxFragment.shader");
-    skyboxPipe.enable();
-    Renderer::GetI().addPipeline("SkyBoxPipeline", &skyboxPipe);
-
-    // EventManager::GetI().addCallback(Event::EventType::MOUSE_MOVED_E, std::bind(trCallback, &triangle, std::placeholders::_1));
-    // EventManager::GetI().addCallback(Event::EventType::MOUSE_SCROLLED_E, std::bind(scrollCallback, &triangle, std::placeholders::_1));
-
+    // Callbacks
     EventManager::GetI().addCallback(Event::EventType::KEY_PRESSED_E, std::bind(walkCallback, &camera, std::placeholders::_1));
     EventManager::GetI().addCallback(Event::EventType::MOUSE_MOVED_E, std::bind(cameraMoveCallback, &camera, std::placeholders::_1));
 
@@ -160,8 +164,20 @@ int Application::run()
         Window::GetI().PullEvents();
         EventManager::GetI().processEvents();
 
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+        ImGui::ShowDemoWindow();
+
         Renderer::GetI().render();
+
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
+
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
 
     exit(EXIT_SUCCESS);
 }

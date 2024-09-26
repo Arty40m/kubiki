@@ -33,3 +33,4 @@
 
 build/*
 CMake_cmd.bat
+imgui.ini
