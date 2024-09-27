@@ -8,8 +8,8 @@ EventManager::EventManager():
     firstBufferIsCurrent(true){}
 
 EventManager::~EventManager() {
-    LOG_DEBUG("Final stack1 cap: {}", eStack1.capacity());
-    LOG_DEBUG("Final stack2 cap: {}", eStack2.capacity());
+    // LOG_DEBUG("Final stack1 cap: {}", eStack1.capacity());
+    // LOG_DEBUG("Final stack2 cap: {}", eStack2.capacity());
 }
 
 EventManager& EventManager::GetI()

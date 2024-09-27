@@ -4,9 +4,7 @@
 #include "../Events/Events.hpp"
 #include "../Events/EventManager.hpp"
 
-#include <imgui.h>
 #include <imgui_impl_glfw.h>
-#include <imgui_impl_opengl3.h>
 
 
 
@@ -117,19 +115,13 @@ void Window::Init(int width, int height)
     curMouseX = (float)_x;
     curMouseY = (float)_y;
 
+    guiMode = false;
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+}
 
-    // IMGUI TMP
-    // Setup Dear ImGui context
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO();
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-
-    // Setup Platform/Renderer backends
-    ImGui_ImplGlfw_InitForOpenGL(window, true);          // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
-    ImGui_ImplOpenGL3_Init();
+void Window::imguiInit()
+{
+    ImGui_ImplGlfw_InitForOpenGL(window, true); // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
 }
 
 Window::Window(){}
@@ -202,6 +194,17 @@ void Window::PullEvents()
         }
     }
 
+}
+
+void Window::switchGuiMode()
+{
+    if (guiMode){
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    } else {
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    }
+    guiMode = !guiMode;
+    
 }
 
 const std::string& Window::getKeyName(int keycode) const

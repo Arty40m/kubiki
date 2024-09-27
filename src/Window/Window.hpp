@@ -22,6 +22,8 @@ public:
     
     // Instance methods
     void Init(int width, int height);
+    void imguiInit();
+
     void PullEvents();
     inline void SwapBuffers() const {glfwSwapBuffers(window);}
     inline bool isShouldClose() const {return glfwWindowShouldClose(window);}
@@ -29,6 +31,9 @@ public:
     inline float getAspectRatio() const {return (float)Window::width / (float)Window::height;}
 
     inline double getTime() const {return glfwGetTime();}
+    inline bool isInGuiMode() const {return guiMode;}
+    void switchGuiMode();
+
     const std::string& getKeyName(int keycode) const;
     inline bool isKeyPressed(int keycode) const {return keyPressedArray[keycode];}
 
@@ -42,6 +47,8 @@ public:
 
 private:
     GLFWwindow* window;
+    bool guiMode;
+
     std::vector<std::string> keyNameMap = createKeyNameMap();
     bool keyStateWasChanged[NUMBER_KEYS];
     bool keyPressedArray[NUMBER_KEYS];

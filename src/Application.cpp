@@ -9,6 +9,8 @@
 #include "Graphic/Graphic.hpp"
 #include "Camera/Camera.hpp"
 
+#include "ImGuiWrapper.hpp"
+
 #define GLAD_GL_IMPLEMENTATION
 #include <glad/glad.h>
 #define GLFW_INCLUDE_NONE
@@ -16,10 +18,6 @@
 
 #include <glm/vec3.hpp>
 #include <glm/ext.hpp>
-
-#include <imgui.h>
-#include <imgui_impl_glfw.h>
-#include <imgui_impl_opengl3.h>
 
 
 
@@ -46,6 +44,8 @@ static bool scrollCallback(Triangle* t, Event* e)
 
 static bool walkCallback(Camera* camera, Event* e)
 {
+    if (Window::GetI().isInGuiMode()){return true;}
+    
     KeyPressedEvent* E = (KeyPressedEvent*)e;
     int keycode = E->keycode;
     float sens = 0.005;
@@ -70,8 +70,23 @@ static bool walkCallback(Camera* camera, Event* e)
     return true;
 }
 
+static bool guiSwitchCallback(Event* e)
+{
+    KeyReleasedEvent* E = (KeyReleasedEvent*)e;
+    int keycode = E->keycode;
+
+    if (keycode==KEY_TAB){
+        Window::GetI().switchGuiMode();
+        ImGuiWrapper::GetI().swithAccess();
+    }
+
+    return true;
+}
+
 static bool cameraMoveCallback(Camera* camera, Event* e)
 {
+    if (Window::GetI().isInGuiMode()){return true;}
+
     MouseMovedEvent* E = (MouseMovedEvent*)e;
     float dy = E->dy;
     float dx = E->dx;
@@ -108,6 +123,7 @@ static bool cameraMoveCallback(Camera* camera, Event* e)
 int Application::run()
 {
     Window::GetI().Init(1024, 768);
+    ImGuiWrapper::GetI().Init();
     Renderer::GetI().Init();
     EventManager::GetI().Init();
 
@@ -148,6 +164,7 @@ int Application::run()
     // Callbacks
     EventManager::GetI().addCallback(Event::EventType::KEY_PRESSED_E, std::bind(walkCallback, &camera, std::placeholders::_1));
     EventManager::GetI().addCallback(Event::EventType::MOUSE_MOVED_E, std::bind(cameraMoveCallback, &camera, std::placeholders::_1));
+    EventManager::GetI().addCallback(Event::EventType::KEY_RELEASED_E, guiSwitchCallback);
 
     EventManager::GetI().addCallback(Event::EventType::KEY_PRESSED_E, [](Event* e){
         KeyPressedEvent* E = (KeyPressedEvent*)e;
@@ -157,6 +174,9 @@ int Application::run()
         return true;
     });
 
+    bool show_another_window = false;
+    glm::vec4 clear_color = {0.45f, 0.55f, 0.60f, 1.00f};
+
     while (!Window::GetI().isShouldClose())
     {
         Window::GetI().SwapBuffers();
@@ -164,20 +184,34 @@ int Application::run()
         Window::GetI().PullEvents();
         EventManager::GetI().processEvents();
 
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
-        ImGui::ShowDemoWindow();
+        ImGuiWrapper::GetI().NewFrame();
+
+        {
+            static float f = 0.0f;
+            static int counter = 0;
+
+            ImGuiWrapper::GetI().Begin("Hello, world!");
+
+            ImGuiWrapper::GetI().Text("This is some useful text.");
+            ImGuiWrapper::GetI().Checkbox("Another Window", &show_another_window);
+            ImGuiWrapper::GetI().Text("Is in gui mode: %d", (int)Window::GetI().isInGuiMode());
+
+            ImGuiWrapper::GetI().SliderFloat("float", &f, 0.0f, 1.0f);
+            ImGuiWrapper::GetI().ColorEdit3("clear color", (float*)&clear_color);
+
+            if (ImGuiWrapper::GetI().Button("Button"))
+                counter++;
+            ImGuiWrapper::GetI().SameLine();
+            ImGuiWrapper::GetI().Text("counter = %d", counter);
+
+            float fps = ImGuiWrapper::GetI().getFramerate();
+            ImGuiWrapper::GetI().Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / fps, fps);
+            ImGuiWrapper::GetI().End();
+        }
 
         Renderer::GetI().render();
-
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        ImGuiWrapper::GetI().Render();
     }
-
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
 
     exit(EXIT_SUCCESS);
 }
