@@ -30,7 +30,7 @@ void SkyBoxPipeline::render()
 
     glm::mat4 MVP = camera->getMVP();
     shader.setUniformMatrix4fv("MVP", (const GLfloat*) glm::value_ptr(MVP));
-    shader.setUniformVector3fv("dir", (const GLfloat*) glm::value_ptr(camera->dir));
+    shader.setUniformVector3fv("dir", (const GLfloat*) glm::value_ptr(camera->getDir()));
     // shader.setUniform1f("boxSize", mesh.boxSize);
 
     mesh.vaop->bind();

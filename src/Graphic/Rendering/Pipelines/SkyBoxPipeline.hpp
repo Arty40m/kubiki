@@ -5,7 +5,7 @@
 #include "../../Rendering/glBuffers.hpp"
 #include "../../Mesh/SkyBoxMesh.hpp"
 #include "../../Vertices.hpp"
-#include "../../../Camera/Camera.hpp"
+#include "../../Camera/Camera.hpp"
 
 
 class SkyBoxPipeline: public Pipeline

@@ -7,42 +7,16 @@
 #include "DataStructures/Stack.hpp"
 
 #include "Graphic/Graphic.hpp"
-#include "Camera/Camera.hpp"
-
+#include "Graphic/Camera/Camera.hpp"
+#include "Player/Player.hpp"
 #include "ImGuiWrapper.hpp"
-
-#define GLAD_GL_IMPLEMENTATION
-#include <glad/glad.h>
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
 
 #include <glm/vec3.hpp>
 #include <glm/ext.hpp>
 
 
 
-static bool trCallback(Triangle* t, Event* e)
-{
-    if (!Window::GetI().isKeyPressed(LEFT_MOUSE_BUTTON)){
-        return true;
-    }
-
-    MouseMovedEvent* E = (MouseMovedEvent*)e;
-    float dx = E->dx;
-    float dy = E->dy;
-
-    t->translate({dx*0.01f, -dy*0.01f, 0.0f});
-    return true;
-}
-
-static bool scrollCallback(Triangle* t, Event* e)
-{
-    MouseScrolledEvent* E = (MouseScrolledEvent*)e;
-    t->translate({0.0f, 0.0f, 0.1f * E->offset});
-    return true;
-}
-
-static bool walkCallback(Camera* camera, Event* e)
+static bool walkCallback(Player* player, Event* e)
 {
     if (Window::GetI().isInGuiMode()){return true;}
     
@@ -53,18 +27,18 @@ static bool walkCallback(Camera* camera, Event* e)
     if (keycode==KEY_D || keycode==KEY_A)
     {
         float sign = (keycode==KEY_D) ? 1.0f : -1.0f;
-        glm::vec3 right = glm::normalize(glm::cross(camera->dir, camera->upv));
-        camera->pos += sens * sign * right;
+        glm::vec3 right = glm::normalize(glm::cross(player->getDir(), {0.0f, 1.0f, 0.0f}));
+        player->setPos(player->getPos() + sens*sign*right);
     }
     else if (keycode==KEY_W || keycode==KEY_S)
     {
         float sign = (keycode==KEY_W) ? 1.0f : -1.0f;
-        camera->pos += sens * sign * camera->dir;
+        player->setPos(player->getPos() + sens*sign*player->getDir());
     }
     else if (keycode==KEY_SPACE || keycode==KEY_LEFT_SHIFT)
     {
         float sign = (keycode==KEY_SPACE) ? 1.0f : -1.0f;
-        camera->pos.y += sens * sign;
+        player->setPos(player->getPos() + sens*sign*glm::vec3(0.0f, 1.0f, 0.0f));
     }
 
     return true;
@@ -83,7 +57,7 @@ static bool guiSwitchCallback(Event* e)
     return true;
 }
 
-static bool cameraMoveCallback(Camera* camera, Event* e)
+static bool cameraMoveCallback(Player* player, Event* e)
 {
     if (Window::GetI().isInGuiMode()){return true;}
 
@@ -91,31 +65,9 @@ static bool cameraMoveCallback(Camera* camera, Event* e)
     float dy = E->dy;
     float dx = E->dx;
 
-    float clipPitch = glm::pi<float>() * 2.0f / 180.0f;
-    float yaw = camera->yaw + 0.001 * E->dx;
-    float pitch = camera->pitch - 0.001 * E->dy;
-
-    if (yaw < 0){
-        yaw = 2.0f * glm::pi<float>() + yaw;
-    } else if (yaw > 2.0f * glm::pi<float>()){
-        yaw = yaw - 2.0f * glm::pi<float>();
-    }
-    
-    if (pitch < clipPitch){
-        pitch = clipPitch;
-    } else if (pitch > (glm::pi<float>() - clipPitch)){
-        pitch = glm::pi<float>() - clipPitch;
-    }
-
-    float sin_pitch = std::sin(pitch);
-    float cos_pitch = std::cos(pitch);
-    float sin_yaw = std::sin(yaw);
-    float cos_yaw = std::cos(yaw);
-
-    glm::vec3 dir = glm::vec3(-sin_pitch*sin_yaw, -cos_pitch, sin_pitch*cos_yaw);
-    camera->dir = glm::normalize(dir);
-    camera->yaw = yaw;
-    camera->pitch = pitch;
+    float sens = 0.001f;
+    auto [pitch, yaw] = player->getRotation();
+    player->setRotation(pitch - sens*dy, yaw + sens*dx);
     
     return true;
 }
@@ -128,6 +80,7 @@ int Application::run()
     EventManager::GetI().Init();
 
     Camera camera;
+    Player player(&camera, glm::vec3(0.0f));
 
     // Sky Box
     SkyBoxPipeline skyboxPipe;
@@ -162,8 +115,8 @@ int Application::run()
     Renderer::GetI().addPipeline("PrimitivePipeline", &primitivePipe);
 
     // Callbacks
-    EventManager::GetI().addCallback(Event::EventType::KEY_PRESSED_E, std::bind(walkCallback, &camera, std::placeholders::_1));
-    EventManager::GetI().addCallback(Event::EventType::MOUSE_MOVED_E, std::bind(cameraMoveCallback, &camera, std::placeholders::_1));
+    EventManager::GetI().addCallback(Event::EventType::KEY_PRESSED_E, std::bind(walkCallback, &player, std::placeholders::_1));
+    EventManager::GetI().addCallback(Event::EventType::MOUSE_MOVED_E, std::bind(cameraMoveCallback, &player, std::placeholders::_1));
     EventManager::GetI().addCallback(Event::EventType::KEY_RELEASED_E, guiSwitchCallback);
 
     EventManager::GetI().addCallback(Event::EventType::KEY_PRESSED_E, [](Event* e){
@@ -187,7 +140,7 @@ int Application::run()
         ImGuiWrapper::GetI().NewFrame();
 
         {
-            static float f = 0.0f;
+            static float fov = 100.0f;
             static int counter = 0;
 
             ImGuiWrapper::GetI().Begin("Hello, world!");
@@ -196,7 +149,8 @@ int Application::run()
             ImGuiWrapper::GetI().Checkbox("Another Window", &show_another_window);
             ImGuiWrapper::GetI().Text("Is in gui mode: %d", (int)Window::GetI().isInGuiMode());
 
-            ImGuiWrapper::GetI().SliderFloat("float", &f, 0.0f, 1.0f);
+            ImGuiWrapper::GetI().SliderFloat("FOV", &fov, 5.0f, 175.0f);
+            camera.setFOV(fov);
             ImGuiWrapper::GetI().ColorEdit3("clear color", (float*)&clear_color);
 
             if (ImGuiWrapper::GetI().Button("Button"))

@@ -1,24 +1,23 @@
 #include "Camera.hpp"
 #include "logging.hpp"
-#include "../Window/Window.hpp"
+#include <glm/ext/matrix_clip_space.hpp>
+#include <glm/ext/matrix_transform.hpp>
+#include "../../Window/Window.hpp"
 
 
 
 Camera::Camera():
-    pos(glm::vec3({0.0f, 0.0f, 5.0f})),
-    dir(glm::vec3({0.0f, 0.0f, -1.0f})),
+    pos(glm::vec3({0.0f, 0.0f, 0.0f})),
+    dir(glm::vec3({0.0f, -1.0f, 0.0f})),
     upv(glm::vec3({0.0f, 1.0f, 0.0f})),
-    yaw(1.5f * glm::pi<float>()),
-    pitch(glm::pi<float>() / 2.0f),
     nearPlane(0.05f),
     farPlane(1000.0f),
     FOV(100.0f)
 {
 }
 
-Camera::~Camera()
-{
-}
+Camera::~Camera(){}
+
 
 glm::mat4 Camera::getProjection()
 {

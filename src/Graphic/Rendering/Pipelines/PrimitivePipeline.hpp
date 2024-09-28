@@ -6,7 +6,7 @@
 #include "../../Mesh/Mesh.hpp"
 #include "../../Mesh/PrimitiveMesh.hpp"
 #include "../../Vertices.hpp"
-#include "../../../Camera/Camera.hpp"
+#include "../../Camera/Camera.hpp"
 
 
 class PrimitivePipeline: public Pipeline
