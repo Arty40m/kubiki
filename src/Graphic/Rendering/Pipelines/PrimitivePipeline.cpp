@@ -42,7 +42,7 @@ void PrimitivePipeline::render()
 
     glm::mat4 MVP = camera->getMVP();
     shader.setUniformMatrix4fv("MVP", (const GLfloat*) glm::value_ptr(MVP));
-    shader.setUniform1f("time", (float)Window::GetI().getTime());
+    // shader.setUniform1f("time", (float)Window::GetI().getTime());
 
     for (int i=0; i<meshPtrs.size(); i++)
     {

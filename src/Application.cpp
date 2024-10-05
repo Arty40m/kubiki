@@ -10,6 +10,7 @@
 #include "Graphic/Camera/Camera.hpp"
 #include "Player/Player.hpp"
 #include "ImGuiWrapper.hpp"
+#include "Physics/PhysicsManager.hpp"
 
 #include <glm/vec3.hpp>
 #include <glm/ext.hpp>
@@ -22,23 +23,20 @@ static bool walkCallback(Player* player, Event* e)
     
     KeyPressedEvent* E = (KeyPressedEvent*)e;
     int keycode = E->keycode;
-    float sens = 0.005;
 
-    if (keycode==KEY_D || keycode==KEY_A)
-    {
-        float sign = (keycode==KEY_D) ? 1.0f : -1.0f;
-        glm::vec3 right = glm::normalize(glm::cross(player->getDir(), {0.0f, 1.0f, 0.0f}));
-        player->setPos(player->getPos() + sens*sign*right);
-    }
-    else if (keycode==KEY_W || keycode==KEY_S)
-    {
-        float sign = (keycode==KEY_W) ? 1.0f : -1.0f;
-        player->setPos(player->getPos() + sens*sign*player->getDir());
-    }
-    else if (keycode==KEY_SPACE || keycode==KEY_LEFT_SHIFT)
-    {
-        float sign = (keycode==KEY_SPACE) ? 1.0f : -1.0f;
-        player->setPos(player->getPos() + sens*sign*glm::vec3(0.0f, 1.0f, 0.0f));
+    if (!player->isOnGround())
+        return true;
+
+    if (keycode==KEY_A){
+        player->stepLeft();
+    } else if (keycode==KEY_D){
+        player->stepRight();
+    } else if (keycode==KEY_W){
+        player->stepForward();
+    } else if (keycode==KEY_S){
+        player->stepBack();
+    } else if (keycode==KEY_SPACE && E->isJustClicked()){
+        player->jump();
     }
 
     return true;
@@ -107,6 +105,20 @@ int Application::run()
         }
     }
 
+    for (int x=-50; x<50; x+=4){
+        for (int z=-50; z<50; z+=4){
+            glm::vec3 pos = {(float)x, 1.0f, (float)z};
+            cubeVec.emplace_back(pos);
+        }
+    }
+
+    for (int x=-50; x<50; x+=8){
+        for (int z=-50; z<50; z+=8){
+            glm::vec3 pos = {(float)x, 3.0f, (float)z};
+            cubeVec.emplace_back(pos);
+        }
+    }
+
     for (int i=0; i<cubeVec.size(); i++){
         primitivePipe.addMesh(&(cubeVec[i].mesh));
     }
@@ -132,10 +144,12 @@ int Application::run()
 
     while (!Window::GetI().isShouldClose())
     {
+        Window::GetI().NewFrame();
         Window::GetI().SwapBuffers();
         Renderer::GetI().clear();
         Window::GetI().PullEvents();
         EventManager::GetI().processEvents();
+        PhysicsManager::GetI().movePlayer(&player);
 
         ImGuiWrapper::GetI().NewFrame();
 
@@ -144,22 +158,25 @@ int Application::run()
             static int counter = 0;
 
             ImGuiWrapper::GetI().Begin("Hello, world!");
-
-            ImGuiWrapper::GetI().Text("This is some useful text.");
-            ImGuiWrapper::GetI().Checkbox("Another Window", &show_another_window);
             ImGuiWrapper::GetI().Text("Is in gui mode: %d", (int)Window::GetI().isInGuiMode());
 
             ImGuiWrapper::GetI().SliderFloat("FOV", &fov, 5.0f, 175.0f);
             camera.setFOV(fov);
-            ImGuiWrapper::GetI().ColorEdit3("clear color", (float*)&clear_color);
 
-            if (ImGuiWrapper::GetI().Button("Button"))
-                counter++;
-            ImGuiWrapper::GetI().SameLine();
-            ImGuiWrapper::GetI().Text("counter = %d", counter);
+            ImGuiWrapper::GetI().SliderFloat("Jump strength", &player.jumpStrength, 1.0f, 250.0f);
+            ImGuiWrapper::GetI().SliderFloat("Jump time", &player.jumpTime, 0.01f, 0.5f);
+            ImGuiWrapper::GetI().SliderFloat("Move speed", &player.moveSpeed, 1.0f, 150.0f);
+            ImGuiWrapper::GetI().SliderFloat("Deacceleration", &PhysicsManager::GetI().deacc, 0.01f, 10.0f);
+            ImGuiWrapper::GetI().SliderFloat("Vel Th", &PhysicsManager::GetI().velTh, 0.5f, 10.0f);
+            ImGuiWrapper::GetI().Text("Y: %.4f", player.getPos().y);
+            
+            glm::vec3 vel = player.pcomp.velocity;
+            glm::vec3 force = player.pcomp.force;
+            ImGuiWrapper::GetI().Text("Velocity: %.4f, %.4f, %.4f", vel.x, vel.y, vel.z);
 
             float fps = ImGuiWrapper::GetI().getFramerate();
             ImGuiWrapper::GetI().Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / fps, fps);
+            ImGuiWrapper::GetI().Text("My %.3f ms/frame (%.1f FPS)", 1000.0f * Window::GetI().getDeltaTime(), 1.0f / Window::GetI().getDeltaTime());
             ImGuiWrapper::GetI().End();
         }
 

@@ -1,13 +1,13 @@
 #version 330
 
 in vec3 oCol;
-in vec3 oPos;
+in vec4 oPos;
 out vec4 fragment;
 
 uniform float time;
 
 void main()
 {
-    fragment = vec4(sin(time + oPos.x), cos(time), sin(time + oPos.z), 1.0);
-    // fragment = vec4(oCol, 1.0);
+    float x = oPos.z / 100.0f;
+    fragment = vec4(x, x, x, 1.0f);
 }

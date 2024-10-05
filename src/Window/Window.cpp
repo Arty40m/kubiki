@@ -115,7 +115,6 @@ void Window::Init(int width, int height)
     curMouseX = (float)_x;
     curMouseY = (float)_y;
 
-    guiMode = false;
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
@@ -124,12 +123,26 @@ void Window::imguiInit()
     ImGui_ImplGlfw_InitForOpenGL(window, true); // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
 }
 
-Window::Window(){}
+Window::Window():
+    guiMode(false),
+    curFrameTime(0.0f),
+    prevFrameTime(0.0f){}
 
 Window::~Window()
 {
     glfwDestroyWindow(window);
     glfwTerminate();
+}
+
+void Window::NewFrame()
+{
+    prevFrameTime = curFrameTime;
+    curFrameTime = glfwGetTime();
+}
+
+float Window::getDeltaTime()
+{
+    return curFrameTime - prevFrameTime;
 }
 
 void Window::PullEvents()

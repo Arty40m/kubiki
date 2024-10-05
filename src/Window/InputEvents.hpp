@@ -47,6 +47,9 @@ public:
     KeyPressedEvent(int keycode, float duration):
     Event(Event::EventType::KEY_PRESSED_E), keycode(keycode), duration(duration){}
 
+    inline bool isJustClicked() const {return duration==0.0f;}
+    inline bool isHold() const {return duration!=0.0f;}
+
     std::string repr() override{
         std::string s = (name + " : " + Window::GetI().getKeyName(keycode) + " for " + std::to_string(duration) + " seconds");
         return s;

@@ -24,6 +24,8 @@ public:
     void Init(int width, int height);
     void imguiInit();
 
+    void NewFrame();
+    float getDeltaTime();
     void PullEvents();
     inline void SwapBuffers() const {glfwSwapBuffers(window);}
     inline bool isShouldClose() const {return glfwWindowShouldClose(window);}
@@ -49,6 +51,8 @@ private:
     GLFWwindow* window;
     bool guiMode;
 
+    float curFrameTime, prevFrameTime;
+
     std::vector<std::string> keyNameMap = createKeyNameMap();
     bool keyStateWasChanged[NUMBER_KEYS];
     bool keyPressedArray[NUMBER_KEYS];
@@ -58,10 +62,8 @@ private:
     float prevKeyPressTimeArray[NUMBER_KEYS];
     float prevKeyReleaseTimeArray[NUMBER_KEYS];
 
-    float prevMouseX;
-    float prevMouseY;
-    float curMouseX;
-    float curMouseY;
+    float prevMouseX, prevMouseY;
+    float curMouseX, curMouseY;
 
     Window();
     ~Window();
