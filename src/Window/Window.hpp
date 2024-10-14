@@ -24,8 +24,6 @@ public:
     void Init(int width, int height);
     void imguiInit();
 
-    void NewFrame();
-    float getDeltaTime();
     void PullEvents();
     inline void SwapBuffers() const {glfwSwapBuffers(window);}
     inline bool isShouldClose() const {return glfwWindowShouldClose(window);}
@@ -50,8 +48,6 @@ public:
 private:
     GLFWwindow* window;
     bool guiMode;
-
-    float curFrameTime, prevFrameTime;
 
     std::vector<std::string> keyNameMap = createKeyNameMap();
     bool keyStateWasChanged[NUMBER_KEYS];

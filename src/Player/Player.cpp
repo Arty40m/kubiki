@@ -50,10 +50,9 @@ void Player::setRotation(float p, float y)
     camera->setDir(dir);
 }
 
-void Player::processStep()
+void Player::processStep(float dt)
 {
     glm::vec3 movement(0.0f);
-    float dt = Window::GetI().getDeltaTime();
 
     if (moveBuffer.forward || moveBuffer.back)
     {

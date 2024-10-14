@@ -17,7 +17,7 @@ public:
     void Init();
 
     // void process();
-    void movePlayer(Player* player);
+    void movePlayer(Player* player, float dt);
 
 private:
     PhysicsManager();

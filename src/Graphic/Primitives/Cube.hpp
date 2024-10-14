@@ -33,7 +33,7 @@ inline Cube::Cube(glm::vec3 pos): P(pos)
 
 inline Cube::~Cube(){}
 
-void Cube::build(glm::vec3 pos)
+inline void Cube::build(glm::vec3 pos)
 {
     mesh.vb.clear();
     mesh.vb.addVertex(glm::vec3(0.0f, 0.0f, 1.0f) + pos, glm::vec3(0.8f, 0.3f, 0.3f));
@@ -96,7 +96,7 @@ void Cube::build(glm::vec3 pos)
     mesh.ib.addIndex(0);
 }
 
-void Cube::translate(glm::vec3 d)
+inline void Cube::translate(glm::vec3 d)
 {
     P += d;
     build(P);

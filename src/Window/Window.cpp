@@ -124,25 +124,12 @@ void Window::imguiInit()
 }
 
 Window::Window():
-    guiMode(false),
-    curFrameTime(0.0f),
-    prevFrameTime(0.0f){}
+    guiMode(false){}
 
 Window::~Window()
 {
     glfwDestroyWindow(window);
     glfwTerminate();
-}
-
-void Window::NewFrame()
-{
-    prevFrameTime = curFrameTime;
-    curFrameTime = glfwGetTime();
-}
-
-float Window::getDeltaTime()
-{
-    return curFrameTime - prevFrameTime;
 }
 
 void Window::PullEvents()

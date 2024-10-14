@@ -33,7 +33,7 @@ inline Triangle::Triangle(glm::vec3 pos): P(pos)
 
 inline Triangle::~Triangle(){}
 
-void Triangle::build(glm::vec3 pos)
+inline void Triangle::build(glm::vec3 pos)
 {
     mesh.vb.clear();
     mesh.vb.addVertex(glm::vec3(-0.6f, -0.4f, 0.0f) + pos, glm::vec3(1.f, 0.f, 0.f));
@@ -46,7 +46,7 @@ void Triangle::build(glm::vec3 pos)
     mesh.ib.addIndex(2);
 }
 
-void Triangle::translate(glm::vec3 d)
+inline void Triangle::translate(glm::vec3 d)
 {
     P += d;
     build(P);

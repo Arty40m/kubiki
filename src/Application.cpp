@@ -1,14 +1,11 @@
+#include "logging.hpp"
+
 #include "Application.hpp"
 #include "Window/Window.hpp"
 #include "Events/Event.hpp"
 #include "Events/Events.hpp"
 #include "Events/EventManager.hpp"
-#include "Window/KeyCodes.hpp"
-#include "DataStructures/Stack.hpp"
 
-#include "Graphic/Graphic.hpp"
-#include "Graphic/Camera/Camera.hpp"
-#include "Player/Player.hpp"
 #include "ImGuiWrapper.hpp"
 #include "Physics/PhysicsManager.hpp"
 
@@ -70,34 +67,29 @@ static bool cameraMoveCallback(Player* player, Event* e)
     return true;
 }
 
-int Application::run()
+Application::Application()
 {
     Window::GetI().Init(1024, 768);
     ImGuiWrapper::GetI().Init();
     Renderer::GetI().Init();
     EventManager::GetI().Init();
 
-    Camera camera;
-    Player player(&camera, glm::vec3(0.0f));
+    player = new Player(&camera, glm::vec3(0.0f));
 
     // Sky Box
-    SkyBoxPipeline skyboxPipe;
-    skyboxPipe.camera = &camera;
-    skyboxPipe.shader.Init("D:\\kubiki\\resources\\shaders\\skyBoxVertex.shader", "D:\\kubiki\\resources\\shaders\\skyBoxFragment.shader");
-    skyboxPipe.enable();
-    Renderer::GetI().addPipeline("SkyBoxPipeline", &skyboxPipe);
+    skyboxPipePtr = new SkyBoxPipeline;
+    skyboxPipePtr->camera = &camera;
+    skyboxPipePtr->shader.Init("D:\\kubiki\\resources\\shaders\\skyBoxVertex.shader", "D:\\kubiki\\resources\\shaders\\skyBoxFragment.shader");
+    skyboxPipePtr->enable();
+    Renderer::GetI().addPipeline("SkyBoxPipeline", skyboxPipePtr);
 
-    // Primitives
-    PrimitivePipeline primitivePipe;
-    primitivePipe.camera = &camera;
-    primitivePipe.shader.Init("D:\\kubiki\\resources\\shaders\\vertex.shader", "D:\\kubiki\\resources\\shaders\\fragment.shader");
-    
-    Triangle triangle2({2.0f, 0.0f, 1.0f});
-    primitivePipe.addMesh(&triangle2.mesh);
-    Triangle triangle;
-    primitivePipe.addMesh(&triangle.mesh);
+    // // Primitives
+    primitivePipePtr = new PrimitivePipeline;
+    primitivePipePtr->camera = &camera;
+    primitivePipePtr->shader.Init("D:\\kubiki\\resources\\shaders\\vertex.shader", "D:\\kubiki\\resources\\shaders\\fragment.shader");
+    primitivePipePtr->enable();
+    Renderer::GetI().addPipeline("PrimitivePipeline", primitivePipePtr);
 
-    std::vector<Cube> cubeVec;
     for (int x=-50; x<50; x+=2){
         for (int z=-50; z<50; z+=2){
             glm::vec3 pos = {(float)x, -2.0f, (float)z};
@@ -120,69 +112,67 @@ int Application::run()
     }
 
     for (int i=0; i<cubeVec.size(); i++){
-        primitivePipe.addMesh(&(cubeVec[i].mesh));
+        primitivePipePtr->addMesh(&(cubeVec[i].mesh));
     }
-
-    primitivePipe.enable();
-    Renderer::GetI().addPipeline("PrimitivePipeline", &primitivePipe);
 
     // Callbacks
-    EventManager::GetI().addCallback(Event::EventType::KEY_PRESSED_E, std::bind(walkCallback, &player, std::placeholders::_1));
-    EventManager::GetI().addCallback(Event::EventType::MOUSE_MOVED_E, std::bind(cameraMoveCallback, &player, std::placeholders::_1));
+    EventManager::GetI().addCallback(Event::EventType::KEY_PRESSED_E, std::bind(walkCallback, player, std::placeholders::_1));
+    EventManager::GetI().addCallback(Event::EventType::MOUSE_MOVED_E, std::bind(cameraMoveCallback, player, std::placeholders::_1));
     EventManager::GetI().addCallback(Event::EventType::KEY_RELEASED_E, guiSwitchCallback);
 
-    EventManager::GetI().addCallback(Event::EventType::KEY_PRESSED_E, [](Event* e){
-        KeyPressedEvent* E = (KeyPressedEvent*)e;
-        if (E->keycode == KEY_ESCAPE){
-            Window::GetI().close();
-        }
-        return true;
-    });
+    EventManager::GetI().addCallback(
+        Event::EventType::KEY_PRESSED_E, 
+        std::bind(
+            [](Engine* engPtr, Event* e){
+                KeyPressedEvent* E = (KeyPressedEvent*)e;
+                if (E->keycode == KEY_ESCAPE){
+                    engPtr->shutdown();
+                }
+                return true;
+            }, this, std::placeholders::_1
+        )
+    );
+}
 
-    bool show_another_window = false;
-    glm::vec4 clear_color = {0.45f, 0.55f, 0.60f, 1.00f};
+Application::~Application(){}
 
-    while (!Window::GetI().isShouldClose())
+void Application::onUpdate()
+{
+    Window::GetI().SwapBuffers();
+    Renderer::GetI().clear();
+    Window::GetI().PullEvents();
+    EventManager::GetI().processEvents();
+    PhysicsManager::GetI().movePlayer(player, getDeltaTime());
+
+    ImGuiWrapper::GetI().NewFrame();
+
     {
-        Window::GetI().NewFrame();
-        Window::GetI().SwapBuffers();
-        Renderer::GetI().clear();
-        Window::GetI().PullEvents();
-        EventManager::GetI().processEvents();
-        PhysicsManager::GetI().movePlayer(&player);
+        static float fov = 100.0f;
+        static int counter = 0;
 
-        ImGuiWrapper::GetI().NewFrame();
+        ImGuiWrapper::GetI().Begin("Hello, world!");
+        ImGuiWrapper::GetI().Text("Is in gui mode: %d", (int)Window::GetI().isInGuiMode());
 
-        {
-            static float fov = 100.0f;
-            static int counter = 0;
+        ImGuiWrapper::GetI().SliderFloat("FOV", &fov, 5.0f, 175.0f);
+        camera.setFOV(fov);
 
-            ImGuiWrapper::GetI().Begin("Hello, world!");
-            ImGuiWrapper::GetI().Text("Is in gui mode: %d", (int)Window::GetI().isInGuiMode());
+        ImGuiWrapper::GetI().SliderFloat("Jump strength", &player->jumpStrength, 1.0f, 250.0f);
+        ImGuiWrapper::GetI().SliderFloat("Jump time", &player->jumpTime, 0.01f, 0.5f);
+        ImGuiWrapper::GetI().SliderFloat("Move speed", &player->moveSpeed, 1.0f, 150.0f);
+        ImGuiWrapper::GetI().SliderFloat("Deacceleration", &PhysicsManager::GetI().deacc, 0.01f, 10.0f);
+        ImGuiWrapper::GetI().SliderFloat("Vel Th", &PhysicsManager::GetI().velTh, 0.5f, 10.0f);
+        ImGuiWrapper::GetI().Text("Y: %.4f", player->getPos().y);
+        
+        glm::vec3 vel = player->pcomp.velocity;
+        glm::vec3 force = player->pcomp.force;
+        ImGuiWrapper::GetI().Text("Velocity: %.4f, %.4f, %.4f", vel.x, vel.y, vel.z);
 
-            ImGuiWrapper::GetI().SliderFloat("FOV", &fov, 5.0f, 175.0f);
-            camera.setFOV(fov);
-
-            ImGuiWrapper::GetI().SliderFloat("Jump strength", &player.jumpStrength, 1.0f, 250.0f);
-            ImGuiWrapper::GetI().SliderFloat("Jump time", &player.jumpTime, 0.01f, 0.5f);
-            ImGuiWrapper::GetI().SliderFloat("Move speed", &player.moveSpeed, 1.0f, 150.0f);
-            ImGuiWrapper::GetI().SliderFloat("Deacceleration", &PhysicsManager::GetI().deacc, 0.01f, 10.0f);
-            ImGuiWrapper::GetI().SliderFloat("Vel Th", &PhysicsManager::GetI().velTh, 0.5f, 10.0f);
-            ImGuiWrapper::GetI().Text("Y: %.4f", player.getPos().y);
-            
-            glm::vec3 vel = player.pcomp.velocity;
-            glm::vec3 force = player.pcomp.force;
-            ImGuiWrapper::GetI().Text("Velocity: %.4f, %.4f, %.4f", vel.x, vel.y, vel.z);
-
-            float fps = ImGuiWrapper::GetI().getFramerate();
-            ImGuiWrapper::GetI().Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / fps, fps);
-            ImGuiWrapper::GetI().Text("My %.3f ms/frame (%.1f FPS)", 1000.0f * Window::GetI().getDeltaTime(), 1.0f / Window::GetI().getDeltaTime());
-            ImGuiWrapper::GetI().End();
-        }
-
-        Renderer::GetI().render();
-        ImGuiWrapper::GetI().Render();
+        float fps = ImGuiWrapper::GetI().getFramerate();
+        ImGuiWrapper::GetI().Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / fps, fps);
+        ImGuiWrapper::GetI().Text("My %.3f ms/frame (%.1f FPS)", 1000.0f * getDeltaTime(), 1.0f / getDeltaTime());
+        ImGuiWrapper::GetI().End();
     }
 
-    exit(EXIT_SUCCESS);
+    Renderer::GetI().render();
+    ImGuiWrapper::GetI().Render();
 }

@@ -19,12 +19,11 @@ PhysicsManager::PhysicsManager(){}
 
 PhysicsManager::~PhysicsManager(){}
 
-void PhysicsManager::movePlayer(Player* player)
+void PhysicsManager::movePlayer(Player* player, float dt)
 {
     Player& pl = *player;
-    pl.processStep();
+    pl.processStep(dt);
     auto& pcomp = pl.pcomp;
-    float dt = Window::GetI().getDeltaTime();
 
     glm::vec3 acceleration = pcomp.force/pcomp.mass;
     if (pl.isOnGround()) // Deacceleration

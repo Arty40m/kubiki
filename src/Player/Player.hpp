@@ -70,7 +70,7 @@ public:
     inline void jump() {moveBuffer.jump = true;}
     inline void moveUp() {moveBuffer.up = true;}
     inline void moveDown() {moveBuffer.down = true;}
-    void processStep();
+    void processStep(float dt);
     inline void push(const glm::vec3& force) {pcomp.force += force;}
 
 private:

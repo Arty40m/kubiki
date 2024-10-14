@@ -1,9 +1,27 @@
+#pragma once
 #include "stlh.hpp"
-#include "logging.hpp"
+#include "Engine.hpp"
+
+#include "Graphic/Graphic.hpp"
+#include "Graphic/Camera/Camera.hpp"
+#include "Player/Player.hpp"
 
 
-class Application
+
+class Application: public Engine
 {
 public:
-    int run();
+    Application();
+    ~Application();
+
+    void onUpdate() override;
+
+public:
+    Camera camera;
+    Player* player;
+
+    SkyBoxPipeline* skyboxPipePtr;
+    PrimitivePipeline* primitivePipePtr;
+
+    std::vector<Cube> cubeVec;
 };
