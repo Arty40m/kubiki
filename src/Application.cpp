@@ -5,6 +5,7 @@
 #include "Events/Event.hpp"
 #include "Events/Events.hpp"
 #include "Events/EventManager.hpp"
+#include "World/World.hpp"
 
 #include "ImGuiWrapper.hpp"
 #include "Physics/PhysicsManager.hpp"
@@ -73,6 +74,7 @@ Application::Application()
     ImGuiWrapper::GetI().Init();
     Renderer::GetI().Init();
     EventManager::GetI().Init();
+    World::GetI().Init();
 
     player = new Player(&camera, glm::vec3(0.0f));
 

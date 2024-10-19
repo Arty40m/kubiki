@@ -16,6 +16,7 @@
 // Meshes
 #include "Mesh/PrimitiveMesh.hpp"
 #include "Mesh/SkyBoxMesh.hpp"
+#include "Mesh/TerrainMesh.hpp"
 
 // Primitives
 #include "Primitives/Triangle.hpp"
